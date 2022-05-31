@@ -79,13 +79,77 @@ descendants NULL nodes has the same number of black nodes (black height)
         root = nil;
     }
 
+
+### Succesor
+
+    int RBTree::succesor(int val){
+        int last = -1;
+        RBNode *x = root;
+        while (x != nil){
+            if (x->value == val)
+                return val;
+            else if (val < x->value){
+                last = x->value;
+                x = x->left;
+            } else {
+                x = x->right;
+            }
+        }
+        return last;
+    }
+### Predecesor
+
+    int RBTree::predecesor(int val){
+        int last = -1;
+        RBNode *x = root;
+        while (x != nil){
+            if (x->value == val)
+                return val;
+            else if (val < x->value){
+                x = x->left;
+            } else {
+                last = x->value;
+                x = x->right;
+            }
+        }
+        return last;
+    }
+### Search
+
+    RBNode* RBTree::find(int val){
+        RBNode *poz = root;
+        while (poz != nil){
+            if (poz->value == val)
+                return poz;
+            else if (val < poz->value){
+                poz = poz->left;
+            } else {
+                poz = poz->right;
+            }
+        }
+        return nil;
+    }
+
+### Interval
+
+    void RBTree::interval(int left, int right){
+        int current = succesor(left);
+        while (current <= right && current != -1){
+            if (find(current) != nil){
+                out << current << ' ';
+            }
+            current = succesor(current + 1);
+        }
+        out << '\n';
+    }
+
 ### Rotations
 
 When you have operations that change the structure of the tree (add, delete node)
 there is a risk that after such an operation the tree will not follow the rules.
 Thus, after an operation, the rotation must be done.
 
-To rebalance it, we do the left or right rotation operation. 
+To rebalance it, we do the left or right rotation operation.
 This operation is done in O(1) (move some pointers).
 
 ![image](https://github.com/anamariapanait10/red_black_tree/blob/master/left_rotation.gif)
@@ -185,40 +249,6 @@ This operation is done in O(1) (move some pointers).
         root->color = BLACK;
     }
 
-### Succesor
-
-    int RBTree::succesor(int val){
-        int last = -1;
-        RBNode *x = root;
-        while (x != nil){
-            if (x->value == val)
-                return val;
-            else if (val < x->value){
-                last = x->value;
-                x = x->left;
-            } else {
-                x = x->right;
-            }
-        }
-        return last;
-    }
-### Predecesor
-
-    int RBTree::predecesor(int val){
-        int last = -1;
-        RBNode *x = root;
-        while (x != nil){
-            if (x->value == val)
-                return val;
-            else if (val < x->value){
-                x = x->left;
-            } else {
-                last = x->value;
-                x = x->right;
-            }
-        }
-        return last;
-    }
 
 ### Delete
     int RBTree::del(int val){
@@ -234,89 +264,90 @@ This operation is done in O(1) (move some pointers).
 #### Simple delete
 
     void RBTree::rbDelete(RBNode *z){
-    RBNode *y = z;
-    RBNode *x;
-    bool y_originalColor = y->color;
-    
-        if (z->left == nil){
-            x = z->right;
-            transplant(z, z->right);
-        } else if (z->right == nil){
-            x = z->left;
-            transplant(z, z->left);
-        } else {
-            y = minimum(z->right);
-            y_originalColor = y->color;
-            x = y->right;
-            if (y->parent == z)
-                x->parent = y;
-            else {
-                transplant(y, y->right);
-                y->right = z->right;
-                y->right->parent = y;
+        RBNode *y = z;
+        RBNode *x;
+        bool y_originalColor = y->color;
+        
+            if (z->left == nil){
+                x = z->right;
+                transplant(z, z->right);
+            } else if (z->right == nil){
+                x = z->left;
+                transplant(z, z->left);
+            } else {
+                y = minimum(z->right);
+                y_originalColor = y->color;
+                x = y->right;
+                if (y->parent == z)
+                    x->parent = y;
+                else {
+                    transplant(y, y->right);
+                    y->right = z->right;
+                    y->right->parent = y;
+                }
+                transplant(z, y);
+                y->left = z->left;
+                y->left->parent = y;
+                y->color = z->color;
             }
-            transplant(z, y);
-            y->left = z->left;
-            y->left->parent = y;
-            y->color = z->color;
+            if (y_originalColor == BLACK)
+                delete_fix(x);
         }
-        if (y_originalColor == BLACK)
-            delete_fix(x);
-    }
 #### Fix delete
     void RBTree::delete_fix(RBNode *x){
-    while (x != root && x->color == BLACK){
-        if (x == x->parent->left){
-            RBNode *w = x->parent->right;
-            if (w->color == RED){
-                w->color = BLACK;
-                x->parent->color = RED;
-                leftRotate(x->parent);
-                w = x->parent->right;
-            }
-            if (w->left->color == BLACK && w->right->color == BLACK){
-                w->color = RED;
-                x = x->parent;
-            } else {
-                if (w->right->color == BLACK){
-                    w->left->color = BLACK;
-                    w->color = RED;
-                    rightRotate(w);
+        while (x != root && x->color == BLACK){
+            if (x == x->parent->left){ // x left son
+                RBNode *w = x->parent->right; // save brother
+                if (w->color == RED){
+                    w->color = BLACK;
+                    x->parent->color = RED;
+                    leftRotate(x->parent);
                     w = x->parent->right;
                 }
-                w->color = x->parent->color;
-                x->parent->color = BLACK;
-                w->right->color = BLACK;
-                leftRotate(x->parent);
-                x = root;
-            }
-        } else {
-            RBNode *w = x->parent->left;
-            if (w->color == RED){
-                w->color = BLACK;
-                x->parent->color = RED;
-                rightRotate(x->parent);
-                w = x->parent->left;
-            }
-            if (w->right->color == BLACK && w->left->color == BLACK){
-                w->color = RED;
-                x = x->parent;
-            } else {
-                if (w->left->color == BLACK){
-                    w->right->color = BLACK;
+                if (w->left->color == BLACK && w->right->color == BLACK){
                     w->color = RED;
-                    leftRotate(w);
+                    x = x->parent;
+                } else {
+                    if (w->right->color == BLACK){
+                        w->left->color = BLACK;
+                        w->color = RED;
+                        rightRotate(w);
+                        w = x->parent->right;
+                    }
+                    w->color = x->parent->color;
+                    x->parent->color = BLACK;
+                    w->right->color = BLACK;
+                    leftRotate(x->parent);
+                    x = root;
+                }
+            } else {
+                RBNode *w = x->parent->left; // save brother
+                if (w->color == RED){
+                    w->color = BLACK;
+                    x->parent->color = RED;
+                    rightRotate(x->parent);
                     w = x->parent->left;
                 }
-                w->color = x->parent->color;
-                x->parent->color = BLACK;
-                w->left->color = BLACK;
-                rightRotate(x->parent);
-                x = root;
+                if (w->right->color == BLACK && w->left->color == BLACK){
+                    w->color = RED;
+                    x = x->parent;
+                } else {
+                    if (w->left->color == BLACK){
+                        w->right->color = BLACK;
+                        w->color = RED;
+                        leftRotate(w);
+                        w = x->parent->left;
+                    }
+                    w->color = x->parent->color;
+                    x->parent->color = BLACK;
+                    w->left->color = BLACK;
+                    rightRotate(x->parent);
+                    x = root;
+                }
             }
         }
+        x->color = BLACK;
     }
-    x->color = BLACK;
 
 ### Transplant 
     void RBTree::transplant(RBNode *u, RBNode *v){
@@ -337,35 +368,6 @@ This operation is done in O(1) (move some pointers).
         return z;
     }
 
-
-### Search
-
-    RBNode* RBTree::find(int val){
-        RBNode *poz = root;
-        while (poz != nil){
-            if (poz->value == val)
-                return poz;
-            else if (val < poz->value){
-                poz = poz->left;
-            } else {
-                poz = poz->right;
-            }
-        }
-        return nil;
-    }
-
-### Interval
-
-    void RBTree::interval(int left, int right){
-        int current = succesor(left);
-        while (current <= right && current != -1){
-            if (find(current) != nil){
-                out << current << ' ';
-            }
-            current = succesor(current + 1);
-        }
-        out << '\n';
-    }
 
 ### Main
 
