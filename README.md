@@ -88,7 +88,7 @@ Thus, after an operation, the rotation must be done.
 To rebalance it, we do the left or right rotation operation. 
 This operation is done in O(1) (move some pointers).
 
-![image](https://github.com/anamariapanait10//blob/main/left_rotaion.gif)
+![image](https://github.com/anamariapanait10/red_black_tree/blob/master/left_rotation.gif)
 
 #### Left-Rotate
     void RBTree::leftRotate(RBNode *x) {
